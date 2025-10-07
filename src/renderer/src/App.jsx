@@ -15,6 +15,7 @@ function App() {
     textShadowBlur: 10,
     textShadowOffsetX: 2,
     textShadowOffsetY: 2,
+    blendMode: 'none',
     formatMode: 'classic',
     hourFormat: 'auto',
     minuteFormat: 'two-digits',
@@ -24,6 +25,7 @@ function App() {
     startDelay: 0,
     backgroundColor: '#ffffff',
     backgroundImage: null,
+    backgroundSize: 'cover',
     positionMode: 'center',
     corner: 'top-left',
     offsetX: 50,
@@ -158,23 +160,46 @@ function App() {
         ctx.fillStyle = config.backgroundColor || '#ffffff'
         ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height)
 
-        // 如果有背景图片，在背景颜色上绘制图片（contain模式）
+        // 如果有背景图片，在背景颜色上绘制图片
         if (backgroundImg) {
           const imgRatio = backgroundImg.width / backgroundImg.height
           const canvasRatio = tempCanvas.width / tempCanvas.height
 
           let drawWidth, drawHeight, x, y
 
-          if (imgRatio > canvasRatio) {
-            drawWidth = tempCanvas.width
-            drawHeight = tempCanvas.width / imgRatio
-            x = 0
-            y = (tempCanvas.height - drawHeight) / 2
+          // 根据 backgroundSize 选择不同的显示模式
+          const size = config.backgroundSize || 'cover'
+
+          if (size === 'cover') {
+            // Cover 模式：填满画布，可能裁剪图片
+            if (imgRatio > canvasRatio) {
+              // 图片更宽，以高度为准
+              drawHeight = tempCanvas.height
+              drawWidth = tempCanvas.height * imgRatio
+              x = (tempCanvas.width - drawWidth) / 2
+              y = 0
+            } else {
+              // 图片更高，以宽度为准
+              drawWidth = tempCanvas.width
+              drawHeight = tempCanvas.width / imgRatio
+              x = 0
+              y = (tempCanvas.height - drawHeight) / 2
+            }
           } else {
-            drawHeight = tempCanvas.height
-            drawWidth = tempCanvas.height * imgRatio
-            x = (tempCanvas.width - drawWidth) / 2
-            y = 0
+            // Contain 模式：完整显示图片，可能留白
+            if (imgRatio > canvasRatio) {
+              // 图片更宽，以宽度为准
+              drawWidth = tempCanvas.width
+              drawHeight = tempCanvas.width / imgRatio
+              x = 0
+              y = (tempCanvas.height - drawHeight) / 2
+            } else {
+              // 图片更高，以高度为准
+              drawHeight = tempCanvas.height
+              drawWidth = tempCanvas.height * imgRatio
+              x = (tempCanvas.width - drawWidth) / 2
+              y = 0
+            }
           }
 
           ctx.drawImage(backgroundImg, x, y, drawWidth, drawHeight)
@@ -187,65 +212,70 @@ function App() {
         const minutes = Math.floor((remainingSeconds % 3600) / 60)
         const seconds = remainingSeconds % 60
 
-        const parts = []
-        const values = { hours, minutes, seconds }
-        const formats = {
-          hours: config.hourFormat,
-          minutes: config.minuteFormat,
-          seconds: config.secondFormat
-        }
-        const order = ['hours', 'minutes', 'seconds']
+        let text = ''
 
-        // 找到最高位（第一个非零的位）
-        let highestNonZero = -1
-        for (let i = 0; i < order.length; i++) {
-          if (values[order[i]] > 0) {
-            highestNonZero = i
-            break
+        // 纯数字模式：直接显示剩余秒数
+        if (config.formatMode === 'pure-number') {
+          text = remainingSeconds.toString()
+        } else {
+          // 经典格式模式
+          const parts = []
+          const values = { hours, minutes, seconds }
+          const formats = {
+            hours: config.hourFormat,
+            minutes: config.minuteFormat,
+            seconds: config.secondFormat
           }
-        }
+          const order = ['hours', 'minutes', 'seconds']
 
-        // 处理每一位
-        order.forEach((unit, index) => {
-          const value = values[unit]
-          const format = formats[unit]
+          // 找到最高位（第一个非零的位）
+          let highestNonZero = -1
+          for (let i = 0; i < order.length; i++) {
+            if (values[order[i]] > 0) {
+              highestNonZero = i
+              break
+            }
+          }
 
-          if (format === 'hide') {
-            // 隐藏：不显示
-            return
-          } else if (format === 'auto') {
-            // 自动模式
-            if (highestNonZero === -1) {
-              // 所有位都是0，显示0
-              if (index === order.length - 1) {
-                parts.push('0')
-              }
-            } else if (index < highestNonZero) {
-              // 高于最高非零位，不显示
-              return
-            } else if (index === highestNonZero) {
-              // 是最高非零位，显示
-              parts.push(value.toString())
-            } else {
-              // 低于最高非零位
-              const prevUnit = order[index - 1]
-              const prevFormat = formats[prevUnit]
-              if (prevFormat === 'auto') {
+          // 处理每一位
+          order.forEach((unit, index) => {
+            const value = values[unit]
+            const format = formats[unit]
+
+            if (format === 'auto') {
+              // 自动模式
+              if (highestNonZero === -1) {
+                // 所有位都是0，显示0
+                if (index === order.length - 1) {
+                  parts.push('0')
+                }
+              } else if (index < highestNonZero) {
+                // 高于最高非零位，不显示
+                return
+              } else if (index === highestNonZero) {
+                // 是最高非零位，显示
                 parts.push(value.toString())
               } else {
-                parts.push(value.toString())
+                // 低于最高非零位
+                const prevUnit = order[index - 1]
+                const prevFormat = formats[prevUnit]
+                if (prevFormat === 'auto') {
+                  parts.push(value.toString())
+                } else {
+                  parts.push(value.toString())
+                }
               }
+            } else if (format === 'show') {
+              // 显示：不补0
+              parts.push(value.toString())
+            } else if (format === 'two-digits') {
+              // 两位数字：补0
+              parts.push(value.toString().padStart(2, '0'))
             }
-          } else if (format === 'show') {
-            // 显示：不补0
-            parts.push(value.toString())
-          } else if (format === 'two-digits') {
-            // 两位数字：补0
-            parts.push(value.toString().padStart(2, '0'))
-          }
-        })
+          })
 
-        const text = parts.join(config.separator || ':')
+          text = parts.join(config.separator || ':')
+        }
 
         // 设置字体 - 清理字体名称中的引号
         const cleanFontFamily = config.fontFamily.replace(/["']/g, '')
@@ -307,7 +337,17 @@ function App() {
           ctx.shadowOffsetY = 0
         }
 
+        // 应用混合模式
+        if (config.blendMode && config.blendMode !== 'none') {
+          ctx.globalCompositeOperation = config.blendMode
+        } else {
+          ctx.globalCompositeOperation = 'source-over'
+        }
+
         ctx.fillText(text, posX, posY)
+
+        // 重置混合模式
+        ctx.globalCompositeOperation = 'source-over'
       }
 
       // 计算总帧数（延迟帧 + 倒计时帧）

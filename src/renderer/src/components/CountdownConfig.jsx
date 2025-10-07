@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { configHelp } from '../utils/configHelp'
 import './CountdownConfig.css'
 
 function CountdownConfig({ config, onConfigChange, onExportVideo }) {
@@ -38,7 +39,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
           <h3>字体设置</h3>
 
         <div className="config-item">
-          <label>字体选择：</label>
+          <label title={configHelp.fontFamily}>字体选择：</label>
           <select
             value={config.fontFamily}
             onChange={(e) => onConfigChange({ ...config, fontFamily: e.target.value })}
@@ -58,7 +59,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         <div className="config-item">
-          <label>字号大小：</label>
+          <label title={configHelp.fontSize}>字号大小：</label>
           <input
             type="number"
             value={config.fontSize}
@@ -70,7 +71,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         <div className="config-item">
-          <label>字体颜色：</label>
+          <label title={configHelp.fontColor}>字体颜色：</label>
           <input
             type="color"
             value={config.fontColor}
@@ -79,7 +80,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         <div className="config-item">
-          <label>启用阴影：</label>
+          <label title={configHelp.textShadowEnabled}>启用阴影：</label>
           <input
             type="checkbox"
             checked={config.textShadowEnabled}
@@ -90,7 +91,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         {config.textShadowEnabled && (
           <>
             <div className="config-item">
-              <label>阴影颜色：</label>
+              <label title={configHelp.textShadowColor}>阴影颜色：</label>
               <input
                 type="color"
                 value={config.textShadowColor.startsWith('rgba') ? '#000000' : config.textShadowColor}
@@ -125,7 +126,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
 
             <div className="config-item">
-              <label>阴影模糊：</label>
+              <label title={configHelp.textShadowBlur}>阴影模糊：</label>
               <input
                 type="number"
                 value={config.textShadowBlur}
@@ -137,7 +138,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
 
             <div className="config-item">
-              <label>阴影偏移X：</label>
+              <label title={configHelp.textShadowOffsetX}>阴影偏移X：</label>
               <input
                 type="number"
                 value={config.textShadowOffsetX}
@@ -149,7 +150,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
 
             <div className="config-item">
-              <label>阴影偏移Y：</label>
+              <label title={configHelp.textShadowOffsetY}>阴影偏移Y：</label>
               <input
                 type="number"
                 value={config.textShadowOffsetY}
@@ -161,60 +162,76 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
           </>
         )}
+
+        <div className="config-item">
+          <label title={configHelp.blendMode}>混合模式：</label>
+          <select
+            value={config.blendMode || 'none'}
+            onChange={(e) => onConfigChange({ ...config, blendMode: e.target.value })}
+          >
+            <option value="none">无</option>
+            <option value="difference">反色 (difference)</option>
+            <option value="exclusion">柔和反色 (exclusion)</option>
+            <option value="hard-light">强光 (hard-light)</option>
+            <option value="soft-light">柔光 (soft-light)</option>
+            <option value="overlay">叠加 (overlay)</option>
+            <option value="screen">滤色 (screen)</option>
+            <option value="color-dodge">颜色减淡 (color-dodge)</option>
+            <option value="color-burn">颜色加深 (color-burn)</option>
+          </select>
+        </div>
       </div>
 
       <div className="config-section">
         <h3>倒计时格式</h3>
 
         <div className="config-item">
-          <label>格式模式：</label>
+          <label title={configHelp.formatMode}>格式模式：</label>
           <select
             value={config.formatMode}
             onChange={(e) => onConfigChange({ ...config, formatMode: e.target.value })}
           >
             <option value="classic">经典格式</option>
+            <option value="pure-number">纯数字</option>
           </select>
         </div>
 
         {config.formatMode === 'classic' && (
           <>
             <div className="config-item time-selectors-row">
-              <label>时</label>
+              <label title={configHelp.hourFormat}>时</label>
               <select
                 value={config.hourFormat}
                 onChange={(e) => onConfigChange({ ...config, hourFormat: e.target.value })}
               >
                 <option value="auto">自动</option>
-                <option value="hide">隐藏</option>
                 <option value="show">显示</option>
                 <option value="two-digits">两位数字</option>
               </select>
 
-              <label>分</label>
+              <label title={configHelp.minuteFormat}>分</label>
               <select
                 value={config.minuteFormat}
                 onChange={(e) => onConfigChange({ ...config, minuteFormat: e.target.value })}
               >
                 <option value="auto">自动</option>
-                <option value="hide">隐藏</option>
                 <option value="show">显示</option>
                 <option value="two-digits">两位数字</option>
               </select>
 
-              <label>秒</label>
+              <label title={configHelp.secondFormat}>秒</label>
               <select
                 value={config.secondFormat}
                 onChange={(e) => onConfigChange({ ...config, secondFormat: e.target.value })}
               >
                 <option value="auto">自动</option>
-                <option value="hide">隐藏</option>
                 <option value="show">显示</option>
                 <option value="two-digits">两位数字</option>
               </select>
             </div>
 
             <div className="config-item">
-              <label>分隔符：</label>
+              <label title={configHelp.separator}>分隔符：</label>
               <input
                 type="text"
                 value={config.separator}
@@ -231,7 +248,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         <h3>倒计时时长</h3>
 
         <div className="config-item">
-          <label>总秒数：</label>
+          <label title={configHelp.totalSeconds}>总秒数：</label>
           <input
             type="number"
             value={config.totalSeconds}
@@ -259,7 +276,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         <h3>背景设置</h3>
 
         <div className="config-item">
-          <label>背景颜色：</label>
+          <label title={configHelp.backgroundColor}>背景颜色：</label>
           <input
             type="color"
             value={config.backgroundColor}
@@ -268,7 +285,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         <div className="config-item">
-          <label>背景图片：</label>
+          <label title={configHelp.backgroundImage}>背景图片：</label>
           <div className="button-group">
             <button onClick={handleSelectBackgroundImage}>选择图片</button>
             {config.backgroundImage && (
@@ -278,9 +295,22 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         {config.backgroundImage && (
-          <div className="background-preview">
-            <img src={config.backgroundImage} alt="背景预览" />
-          </div>
+          <>
+            <div className="config-item">
+              <label title={configHelp.backgroundSize}>显示模式：</label>
+              <select
+                value={config.backgroundSize}
+                onChange={(e) => onConfigChange({ ...config, backgroundSize: e.target.value })}
+              >
+                <option value="cover">填满区域</option>
+                <option value="contain">完整显示</option>
+              </select>
+            </div>
+
+            <div className="background-preview">
+              <img src={config.backgroundImage} alt="背景预览" />
+            </div>
+          </>
         )}
       </div>
 
@@ -288,7 +318,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         <h3>位置设置</h3>
 
         <div className="config-item">
-          <label>定位模式：</label>
+          <label title={configHelp.positionMode}>定位模式：</label>
           <select
             value={config.positionMode}
             onChange={(e) => onConfigChange({ ...config, positionMode: e.target.value })}
@@ -301,7 +331,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         {config.positionMode === 'custom' && (
           <>
             <div className="config-item">
-              <label>基准角：</label>
+              <label title={configHelp.corner}>基准角：</label>
               <select
                 value={config.corner}
                 onChange={(e) => onConfigChange({ ...config, corner: e.target.value })}
@@ -314,7 +344,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
 
             <div className="config-item">
-              <label>X 偏移：</label>
+              <label title={configHelp.offsetX}>X 偏移：</label>
               <input
                 type="number"
                 value={config.offsetX}
@@ -325,7 +355,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
             </div>
 
             <div className="config-item">
-              <label>Y 偏移：</label>
+              <label title={configHelp.offsetY}>Y 偏移：</label>
               <input
                 type="number"
                 value={config.offsetY}
@@ -342,7 +372,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         <h3>视频导出</h3>
 
         <div className="config-item">
-          <label>帧率：</label>
+          <label title={configHelp.fps}>帧率：</label>
           <select
             value={config.fps}
             onChange={(e) => onConfigChange({ ...config, fps: parseInt(e.target.value) })}
@@ -355,7 +385,7 @@ function CountdownConfig({ config, onConfigChange, onExportVideo }) {
         </div>
 
         <div className="config-item">
-          <label>比特率：</label>
+          <label title={configHelp.bitrate}>比特率：</label>
           <select
             value={config.bitrate}
             onChange={(e) => onConfigChange({ ...config, bitrate: parseInt(e.target.value) })}

@@ -35,16 +35,39 @@ function CountdownPreview({ config, countdown }) {
 
         let drawWidth, drawHeight, x, y
 
-        if (imgRatio > canvasRatio) {
-          drawWidth = canvas.width
-          drawHeight = canvas.width / imgRatio
-          x = 0
-          y = (canvas.height - drawHeight) / 2
+        // 根据 backgroundSize 选择不同的显示模式
+        const size = config.backgroundSize || 'cover'
+
+        if (size === 'cover') {
+          // Cover 模式：填满画布，可能裁剪图片
+          if (imgRatio > canvasRatio) {
+            // 图片更宽，以高度为准
+            drawHeight = canvas.height
+            drawWidth = canvas.height * imgRatio
+            x = (canvas.width - drawWidth) / 2
+            y = 0
+          } else {
+            // 图片更高，以宽度为准
+            drawWidth = canvas.width
+            drawHeight = canvas.width / imgRatio
+            x = 0
+            y = (canvas.height - drawHeight) / 2
+          }
         } else {
-          drawHeight = canvas.height
-          drawWidth = canvas.height * imgRatio
-          x = (canvas.width - drawWidth) / 2
-          y = 0
+          // Contain 模式：完整显示图片，可能留白
+          if (imgRatio > canvasRatio) {
+            // 图片更宽，以宽度为准
+            drawWidth = canvas.width
+            drawHeight = canvas.width / imgRatio
+            x = 0
+            y = (canvas.height - drawHeight) / 2
+          } else {
+            // 图片更高，以高度为准
+            drawHeight = canvas.height
+            drawWidth = canvas.height * imgRatio
+            x = (canvas.width - drawWidth) / 2
+            y = 0
+          }
         }
 
         ctx.drawImage(img, x, y, drawWidth, drawHeight)
@@ -158,14 +181,31 @@ function CountdownPreview({ config, countdown }) {
         ctx.shadowOffsetY = 0
       }
 
+      // Apply blend mode if enabled
+      if (config.blendMode && config.blendMode !== 'none') {
+        ctx.globalCompositeOperation = config.blendMode
+      } else {
+        ctx.globalCompositeOperation = 'source-over'
+      }
+
       ctx.fillText(text, posX, posY)
+
+      // Reset composite operation
+      ctx.globalCompositeOperation = 'source-over'
     }
   }, [config, countdown])
 
   function formatCountdownText(countdown, config) {
     const { hours, minutes, seconds } = countdown
-    const { hourFormat, minuteFormat, secondFormat, separator } = config
+    const { formatMode, hourFormat, minuteFormat, secondFormat, separator } = config
 
+    // 纯数字模式：直接显示剩余秒数
+    if (formatMode === 'pure-number') {
+      const totalSeconds = hours * 3600 + minutes * 60 + seconds
+      return totalSeconds.toString()
+    }
+
+    // 经典格式模式
     const parts = []
     const values = { hours, minutes, seconds }
     const formats = { hours: hourFormat, minutes: minuteFormat, seconds: secondFormat }
@@ -185,10 +225,7 @@ function CountdownPreview({ config, countdown }) {
       const value = values[unit]
       const format = formats[unit]
 
-      if (format === 'hide') {
-        // 隐藏：不显示
-        return
-      } else if (format === 'auto') {
+      if (format === 'auto') {
         // 自动模式：当该位是最高位且有值时显示
         // 但是如果低于最高位的上级不是自动模式，则依旧显示
         if (highestNonZero === -1) {
